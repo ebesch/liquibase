@@ -104,7 +104,16 @@ public class MissingDataChangeGenerator extends AbstractChangeGenerator implemen
                             column.setValue(new String((byte[]) value, LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class).getOutputEncoding()));
                         } else if(Boolean.valueOf(System.getProperty("liquibaseEnableByteAsHex"))) {
                             final String hex = new BigInteger(1, (byte[])value).toString(16);
-                            column.setValue((hex.length() % 2) == 0 ? hex : "0" + hex);
+                            final int leadingZeros = (((byte[])value).length * 2 ) - hex.length();
+                            String leading = "";
+                            if(leadingZeros > 0 ) {
+                                char [] zeros = new char[leadingZeros];
+                                for(int zi=0;zi<leadingZeros;zi++) {
+                                    zeros[zi] = '0';
+                                }
+                                leading = new String(zeros);
+                            }
+                            column.setValue(leading + hex);
                         }
                         column.setValueComputed(new DatabaseFunction("UNSUPPORTED FOR DIFF: BINARY DATA"));
                     } else { // fall back to simple string
