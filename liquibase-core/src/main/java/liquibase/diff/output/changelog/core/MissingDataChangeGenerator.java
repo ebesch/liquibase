@@ -20,6 +20,7 @@ import liquibase.structure.core.*;
 import liquibase.util.JdbcUtils;
 import liquibase.util.StringUtil;
 
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -101,6 +102,9 @@ public class MissingDataChangeGenerator extends AbstractChangeGenerator implemen
                     } else if (value instanceof byte[]) {
                         if (referenceDatabase instanceof InformixDatabase) {
                             column.setValue(new String((byte[]) value, LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class).getOutputEncoding()));
+                        } else if(Boolean.valueOf(System.getProperty("liquibaseEnableByteAsHex"))) {
+                            final String hex = new BigInteger(1, (byte[])value).toString(16);
+                            column.setValue((hex.length() % 2) == 0 ? hex : "0" + hex);
                         }
                         column.setValueComputed(new DatabaseFunction("UNSUPPORTED FOR DIFF: BINARY DATA"));
                     } else { // fall back to simple string
