@@ -103,17 +103,7 @@ public class MissingDataChangeGenerator extends AbstractChangeGenerator implemen
                         if (referenceDatabase instanceof InformixDatabase) {
                             column.setValue(new String((byte[]) value, LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class).getOutputEncoding()));
                         } else if(Boolean.valueOf(System.getProperty("liquibaseEnableByteAsHex"))) {
-                            final String hex = new BigInteger(1, (byte[])value).toString(16);
-                            final int leadingZeros = (((byte[])value).length * 2 ) - hex.length();
-                            String leading = "";
-                            if(leadingZeros > 0 ) {
-                                char [] zeros = new char[leadingZeros];
-                                for(int zi=0;zi<leadingZeros;zi++) {
-                                    zeros[zi] = '0';
-                                }
-                                leading = new String(zeros);
-                            }
-                            column.setValue(leading + hex);
+                            column.setValue(String.format("%0" + (((byte[])value).length << 1) + "x", new BigInteger(1, (byte[])value)));
                         }
                         column.setValueComputed(new DatabaseFunction("UNSUPPORTED FOR DIFF: BINARY DATA"));
                     } else { // fall back to simple string
